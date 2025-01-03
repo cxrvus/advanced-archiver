@@ -62,17 +62,20 @@ const createArchiveIndex = async (self: AdvancedArchiver) => {
 	const { vault, workspace } = self.app;
 	const allFiles = vault.getFiles();
 
-	const archiveFiles = allFiles.map(file => {
-		let reason;
-		if (isOrphan(self, file)) reason = 'Orphan';
-		else reason = null;
-		return { file, reason };
-	})
+	const archiveFiles = allFiles.map(file =>
+		{
+			let reason;
+			if (isOrphan(self, file)) reason = 'Orphan';
+			else reason = null;
+			return { file, reason };
+		})
+		.filter(({reason}) => reason)
+	;
 
-	const intro = "*Press the Auto-Archive button again to archive all mentioned files in current note*\n";
+	// todo: display as callout
+	const intro = `*Found ${archiveFiles.length} file(s)*\nPress the Auto-Archive button again to archive all mentioned files in current note*\n`;
 	const headers = "| File | Reason |\n| --- | --- |";
 	const data = archiveFiles
-		.filter(({reason}) => reason)
 		.map(({file, reason}) => `| [[${file.path}\\|${file.name}]] | ${reason} |`)
 		.join('\n')
 	;
