@@ -70,10 +70,10 @@ const createArchiveIndex = async (self: AdvancedArchiver) => {
 	})
 
 	const intro = "*Press the Auto-Archive button again to archive all mentioned files in current note*\n";
-	const headers = "| File | Reason | Path |\n| --- | --- | --- |";
+	const headers = "| File | Reason |\n| --- | --- |";
 	const data = archiveFiles
 		.filter(({reason}) => reason)
-		.map(({file, reason}) => `|${file.name}| ${reason} | [[${file.path}]] |`)
+		.map(({file, reason}) => `| [[${file.path}\\|${file.name}]] | ${reason} |`)
 		.join('\n')
 	;
 
