@@ -7,7 +7,7 @@ export const archiveCurrent = (self: AdvancedArchiver, copied: boolean, checking
 	if (currentFile) {
 		if (!checking) {
 			if (currentFile) {
-				archive(self, [currentFile], false)
+				archive(self, [currentFile], copied)
 				.catch((error) => {
 					new Notice(error.message);
 				});
