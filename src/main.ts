@@ -18,10 +18,10 @@ export default class AdvancedArchiver extends Plugin {
 
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
-			id: 'archive-orphans',
-			name: 'Archive Orphans',
+			id: 'archive-index',
+			name: 'Create Archive Index',
 			callback: () => {
-				new Notice('This is a notice!');
+				archiver.createArchiveIndexSync(this);
 			}
 		});
 
@@ -39,10 +39,12 @@ export default class AdvancedArchiver extends Plugin {
 
 		this.addSettingTab(new ArchiverSettingsTab(this.app, this));
 
+		// ## UI
+		// todo: add ribbon button
+
 		// ## Commands
 		// todo: MD table formatting
-		// todo: create archival preview
-		// todo: archive from preview
+		// todo: archive from index
 
 		// ## Conditions:
 		// todo: archive orphan files

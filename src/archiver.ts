@@ -1,6 +1,43 @@
 import { FileView, Notice, TFile } from 'obsidian';
 import AdvancedArchiver from './main';
 
+
+export const archive = async (self: AdvancedArchiver, files: TFile[], copied: boolean) => {
+	const { vault } = self.app;
+	const archiveFolderPath = await getArchivePath(self);
+	const archivedFiles = []
+
+	for(const file of files) {
+		try {
+			const archiveFilePath = `${archiveFolderPath}/${file.name}`;
+			const archivedFile = await vault.copy(file, archiveFilePath);
+			if (!copied) await vault.delete(file);
+
+			archivedFiles.push(archivedFile);
+		} catch (e) {
+			throw new Error(`Failed to archive file: ${e.message}`);
+		} finally {
+			new Notice(`archived ${archivedFiles.length} file(s)`);
+		}
+	}
+
+	return archivedFiles;
+}
+
+const getArchivePath = async (self: AdvancedArchiver) => {
+	const { vault } = self.app;
+	const { folder } = self.settings;
+
+	if (!vault.getFolderByPath(folder)) await vault.createFolder(folder);
+
+	const date = new Date().toISOString().split('T')[0];
+	const datedPath = `${folder}/${date}`;
+
+	if (!vault.getFolderByPath(datedPath)) await vault.createFolder(datedPath);
+
+	return datedPath;
+}
+
 export const archiveCurrent = (self: AdvancedArchiver, copied: boolean, checking: boolean) => {
 	const currentFile = self.app.workspace.getActiveViewOfType(FileView)?.file;
 
@@ -17,29 +54,53 @@ export const archiveCurrent = (self: AdvancedArchiver, copied: boolean, checking
 	return !!currentFile;
 }
 
-export const archive = async (self: AdvancedArchiver, files: TFile[], copied: boolean) => {
-	const { vault } = self.app;
-	const { folder } = self.settings;
+export const createArchiveIndexSync = (self: AdvancedArchiver) => {
+	createArchiveIndex(self).catch(e => new Notice(`failed to create Archive Index: ${e}`));
+}
 
-	if (!vault.getFolderByPath(folder)) await vault.createFolder(folder);
+const createArchiveIndex = async (self: AdvancedArchiver) => {
+	const { vault, workspace } = self.app;
+	const allFiles = vault.getFiles();
 
-	const date = new Date().toISOString().split('T')[0];
-	const datedPath = `${folder}/${date}`;
+	const archiveFiles = allFiles.map(file => {
+		let reason;
+		if (isOrphan(self, file)) reason = 'Orphan';
+		else reason = null;
+		return { file, reason };
+	})
 
-	if (!vault.getFolderByPath(datedPath)) await vault.createFolder(datedPath);
+	const intro = "*Press the Auto-Archive button again to archive all mentioned files in current note*\n";
+	const headers = "| File | Reason | Path |\n| --- | --- | --- |";
+	const data = archiveFiles
+		.filter(({reason}) => reason)
+		.map(({file, reason}) => `|${file.name}| ${reason} | [[${file.path}]] |`)
+		.join('\n')
+	;
 
-	let i = 0;
+	const content = [intro, headers, data, ''].join('\n')
 
-	for(const file of files) {
-		try {
-			const path = `${datedPath}/${file.name}`;
-			await vault.copy(file, path);
-			if (!copied) await vault.delete(file);
-			i++;
-		} catch (e) {
-			throw new Error(`Failed to archive file: ${e.message}`);
-		} finally {
-			new Notice(`archived ${i} file(s)`);
-		}
-	}
+	const folderPath = await getArchivePath(self);
+	const filePath = `${folderPath}/Archive Index.md`; 
+
+	const oldFile = vault.getFileByPath(filePath);
+	if (oldFile) await vault.delete(oldFile);
+
+	const newFile = await vault.create(filePath, content);
+	workspace.getLeaf(true).openFile(newFile);
+}
+
+const isOrphan = (self: AdvancedArchiver, file: TFile): boolean => {
+	return !getInlinks(self, file).length && !getOutlinks(self, file).length;
+}
+
+const getInlinks = (self: AdvancedArchiver, file: TFile): string[] => {
+	const { resolvedLinks } = self.app.metadataCache;
+	return Object.entries(resolvedLinks)
+		.filter(([, targetFiles]) => targetFiles[file.path] > 0)
+		.map(([sourcePath]) => sourcePath);
+}
+
+const getOutlinks = (self: AdvancedArchiver, file: TFile): string[] => {
+	const { resolvedLinks } = self.app.metadataCache;
+	return resolvedLinks[file.path] ? Object.keys(resolvedLinks[file.path]) : [];
 }
