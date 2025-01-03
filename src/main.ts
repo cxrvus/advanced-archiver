@@ -6,7 +6,7 @@ interface ArchiverSettings {
 }
 
 const DEFAULT_SETTINGS: ArchiverSettings = {
-	folder: ''
+	folder: 'Archive'
 }
 
 export default class AdvancedArchiver extends Plugin {
@@ -104,8 +104,11 @@ export default class AdvancedArchiver extends Plugin {
 		const { vault } = this.app;
 		const { folder } = this.settings;
 
+		if (!vault.getFolderByPath(folder)) await vault.createFolder(folder);
+
 		const date = new Date().toISOString().split('T')[0];
 		const datedPath = `${folder}/${date}`;
+
 		if (!vault.getFolderByPath(datedPath)) await vault.createFolder(datedPath);
 
 		let i = 0;
