@@ -67,6 +67,21 @@ export default class AdvancedArchiver extends Plugin {
 		});
 
 		this.addSettingTab(new ArchiverSettingsTab(this.app, this));
+
+		// ## Commands
+		// todo: MD table formatting
+		// todo: create archival preview
+		// todo: archive from preview
+
+		// ## Conditions:
+		// todo: archive orphan files
+		// todo: archive untracked files
+
+		// ## Settings:
+		// todo: root files (Search field)
+		// todo: never archive (Search field)
+		// idea: archival conditions (see above)
+		// idea: always archive (Search field)
 	}
 
 	onunload() {
