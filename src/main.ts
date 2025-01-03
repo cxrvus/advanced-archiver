@@ -1,4 +1,5 @@
-import { App, FileView, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
+import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import * as archiver from './archiver'
 
 
 interface ArchiverSettings {
@@ -27,43 +28,13 @@ export default class AdvancedArchiver extends Plugin {
 		this.addCommand({
 			id: 'archive-current',
 			name: 'Archive Current File',
-			checkCallback: (checking) => {
-				const currentFile = this.app.workspace.getActiveViewOfType(FileView)?.file;
-
-				if (currentFile) {
-					if (!checking) {
-						if (currentFile) {
-							this.archiveCurrent(currentFile, false)
-							.catch((error) => {
-								new Notice(error.message);
-							});
-						}
-					}
-				}
-				
-				return !!currentFile;
-			}
+			checkCallback: (checking) => archiver.archiveCurrent(this, false, checking)
 		});
 
 		this.addCommand({
 			id: 'archive-current-copied',
 			name: 'Archive Copy of Current File',
-			checkCallback: (checking) => {
-				const currentFile = this.app.workspace.getActiveViewOfType(FileView)?.file;
-
-				if (currentFile) {
-					if (!checking) {
-						if (currentFile) {
-							this.archiveCurrent(currentFile, true)
-							.catch((error) => {
-								new Notice(error.message);
-							});
-						}
-					}
-				}
-				
-				return !!currentFile;
-			}
+			checkCallback: (checking) => archiver.archiveCurrent(this, true, checking)
 		});
 
 		this.addSettingTab(new ArchiverSettingsTab(this.app, this));
@@ -94,37 +65,6 @@ export default class AdvancedArchiver extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-	}
-
-	async archiveCurrent(file: TFile, copied: boolean) {
-		await this.archive([file], copied);
-	}
-
-	async archive(files: TFile[], copied: boolean) {
-		const { vault } = this.app;
-		const { folder } = this.settings;
-
-		if (!vault.getFolderByPath(folder)) await vault.createFolder(folder);
-
-		const date = new Date().toISOString().split('T')[0];
-		const datedPath = `${folder}/${date}`;
-
-		if (!vault.getFolderByPath(datedPath)) await vault.createFolder(datedPath);
-
-		let i = 0;
-
-		for(const file of files) {
-			try {
-				const path = `${datedPath}/${file.name}`;
-				await vault.copy(file, path);
-				if (!copied) await vault.delete(file);
-				i++;
-			} catch (e) {
-				throw new Error(`Failed to archive file: ${e.message}`);
-			} finally {
-				new Notice(`archived ${i} file(s)`);
-			}
-		}
 	}
 }
 
