@@ -1,12 +1,12 @@
-import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, FileView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 
 interface ArchiverSettings {
-	mySetting: string;
+	folder: string;
 }
 
 const DEFAULT_SETTINGS: ArchiverSettings = {
-	mySetting: 'default'
+	folder: 'default'
 }
 
 export default class AdvancedArchiver extends Plugin {
@@ -15,48 +15,24 @@ export default class AdvancedArchiver extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
-		});
-
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
-
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
-			id: 'open-sample-modal-simple',
-			name: 'Open sample modal (simple)',
+			id: 'archive-orphans',
+			name: 'Archive Orphans',
 			callback: () => {
 				new Notice('This is a notice!');
 			}
 		});
-		// This adds an editor command that can perform some operation on the current editor instance
+
 		this.addCommand({
-			id: 'sample-editor-command',
-			name: 'Sample editor command',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
-				editor.replaceSelection('Sample Editor Command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-sample-modal-complex',
-			name: 'Open sample modal (complex)',
+			id: 'archive-current',
+			name: 'Archive Current File',
 			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+				const markdownView = this.app.workspace.getActiveViewOfType(FileView);
 				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
 					if (!checking) {
 						new Notice('This is a notice!');
 					}
-
-					// This command will only show up in Command Palette when the check function returns true
 					return true;
 				}
 			}
@@ -93,13 +69,13 @@ class ArchiverSettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
+			.setName('Archive Folder')
+			.setDesc('target folder for you archived notes')
 			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+				.setPlaceholder('Folder')
+				.setValue(this.plugin.settings.folder)
 				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.folder = value;
 					await this.plugin.saveSettings();
 				}));
 	}
