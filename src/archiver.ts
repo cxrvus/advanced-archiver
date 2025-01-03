@@ -60,9 +60,11 @@ export const createArchiveIndexSync = (self: AdvancedArchiver) => {
 
 const createArchiveIndex = async (self: AdvancedArchiver) => {
 	const { vault, workspace } = self.app;
-	const allFiles = vault.getFiles();
 
-	const archiveFiles = allFiles.map(file =>
+	const searchFiles = vault.getFiles().filter(({path}) => !isArchived(self, path));
+	console.log(searchFiles);
+
+	const archiveFiles = searchFiles.map(file =>
 		{
 			let reason;
 			if (isOrphan(self, file)) reason = 'Orphan';
@@ -73,7 +75,7 @@ const createArchiveIndex = async (self: AdvancedArchiver) => {
 	;
 
 	// todo: display as callout
-	const intro = `*Found ${archiveFiles.length} file(s)*\nPress the Auto-Archive button again to archive all mentioned files in current note*\n`;
+	const intro = `*Found ${archiveFiles.length} file(s)*\n*Press the Auto-Archive button again to archive all mentioned files in current note*\n`;
 	const headers = "| File | Reason |\n| --- | --- |";
 	const data = archiveFiles
 		.map(({file, reason}) => `| [[${file.path}\\|${file.name}]] | ${reason} |`)
@@ -93,7 +95,9 @@ const createArchiveIndex = async (self: AdvancedArchiver) => {
 }
 
 const isOrphan = (self: AdvancedArchiver, file: TFile): boolean => {
-	return !getInlinks(self, file).length && !getOutlinks(self, file).length;
+	const inlinks = getInlinks(self, file).filter(link => !isArchived(self, link));
+	const outlinks = getOutlinks(self, file).filter(link => !isArchived(self, link));
+	return !inlinks.length && !outlinks.length;
 }
 
 const getInlinks = (self: AdvancedArchiver, file: TFile): string[] => {
@@ -106,4 +110,8 @@ const getInlinks = (self: AdvancedArchiver, file: TFile): string[] => {
 const getOutlinks = (self: AdvancedArchiver, file: TFile): string[] => {
 	const { resolvedLinks } = self.app.metadataCache;
 	return resolvedLinks[file.path] ? Object.keys(resolvedLinks[file.path]) : [];
+}
+
+const isArchived = (self: AdvancedArchiver, path: string) => {
+	return path.startsWith(self.settings.folder);
 }
