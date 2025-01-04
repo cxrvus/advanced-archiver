@@ -5,11 +5,13 @@ import * as archiver from './archiver'
 interface ArchiverSettings {
 	targetFolder: string;
 	includedFolders: string;
+	rootFile: string;
 }
 
 const DEFAULT_SETTINGS: ArchiverSettings = {
 	targetFolder: 'Archive',
 	includedFolders: '',
+	rootFile: '',
 }
 
 export default class Archiver extends Plugin {
@@ -116,6 +118,23 @@ class ArchiverSettingsTab extends PluginSettingTab {
 					}
 
 					new Notice('successfully changed included folders');
+
+					this.plugin.settings.includedFolders = value;
+					await this.plugin.saveSettings();
+				})
+			)
+		;
+
+		new Setting(containerEl)
+			.setName('Root File')
+			.setDesc('file that will be used to recursively detect untracked files')
+			.addText(text => text
+				.setPlaceholder('File')
+				.setValue(this.plugin.settings.rootFile)
+				.onChange(async (value) => {
+					if (!this.app.vault.getFileByPath(value)) return
+
+					new Notice('successfully changed root file');
 
 					this.plugin.settings.includedFolders = value;
 					await this.plugin.saveSettings();
