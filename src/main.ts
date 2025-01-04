@@ -43,14 +43,10 @@ export default class Archiver extends Plugin {
 		this.addSettingTab(new ArchiverSettingsTab(this.app, this));
 
 		// ## UI
-		// idea: add ribbon button to create back-up a.k.a. archive-copy
-
-		// ## Commands
-		// [-]
+		// idea: add ribbon button to show command menu
 
 		// ## Settings:
 		// fixme: move all validation to saveSettings()
-		// idea: archival conditions (see above)
 	}
 
 	onunload() {

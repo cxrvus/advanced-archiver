@@ -63,6 +63,8 @@ const archiveFromIndex = async (self: Archiver, copied: boolean, indexFile: TFil
 export const createArchiveIndex = async (self: Archiver) => {
 	const { vault, workspace } = self.app;
 
+	// idea: if enabled in settings, generate Canvas Mirrors
+
 	const includedFiles = vault.getFiles()
 		.filter(({path}) => preFilter(self, path))
 	;
