@@ -136,7 +136,7 @@ class ArchiverSettingsTab extends PluginSettingTab {
 
 					new Notice('successfully changed root file');
 
-					this.plugin.settings.includedFolders = value;
+					this.plugin.settings.rootFile = value;
 					await this.plugin.saveSettings();
 				})
 			)
