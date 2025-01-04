@@ -45,18 +45,16 @@ export default class AdvancedArchiver extends Plugin {
 		// todo: add ribbon button
 
 		// ## Commands
-		// todo: MD table formatting
 		// todo: archive from index
 
 		// ## Conditions:
-		// todo: archive orphan files
 		// todo: archive untracked files
 
 		// ## Settings:
+		// fixme: move all validation to saveSettings()
 		// todo: root files (Search field)
-		// todo: never archive (Search field)
+		// todo: option to exclude Canvas Mirrors
 		// idea: archival conditions (see above)
-		// idea: always archive (Search field)
 	}
 
 	onunload() {
@@ -86,7 +84,6 @@ class ArchiverSettingsTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		// fixme: move all validation to saveSettings()
 		new Setting(containerEl)
 			.setName('Archive Folder')
 			.setDesc('target folder for you archived notes')
