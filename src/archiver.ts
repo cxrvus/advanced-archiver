@@ -26,7 +26,7 @@ export const archive = async (self: AdvancedArchiver, files: TFile[], copied: bo
 
 const getArchivePath = async (self: AdvancedArchiver) => {
 	const { vault } = self.app;
-	const { folder } = self.settings;
+	const { targetFolder: folder } = self.settings;
 
 	if (!vault.getFolderByPath(folder)) await vault.createFolder(folder);
 
@@ -61,10 +61,9 @@ export const createArchiveIndexSync = (self: AdvancedArchiver) => {
 const createArchiveIndex = async (self: AdvancedArchiver) => {
 	const { vault, workspace } = self.app;
 
-	const searchFiles = vault.getFiles().filter(({path}) => !isArchived(self, path));
-	console.log(searchFiles);
+	const activeFiles = vault.getFiles().filter(({path}) => isActive(self, path));
 
-	const archiveFiles = searchFiles.map(file =>
+	const archiveFiles = activeFiles.map(file =>
 		{
 			let reason;
 			if (isOrphan(self, file)) reason = 'Orphan';
@@ -95,8 +94,8 @@ const createArchiveIndex = async (self: AdvancedArchiver) => {
 }
 
 const isOrphan = (self: AdvancedArchiver, file: TFile): boolean => {
-	const inlinks = getInlinks(self, file).filter(link => !isArchived(self, link));
-	const outlinks = getOutlinks(self, file).filter(link => !isArchived(self, link));
+	const inlinks = getInlinks(self, file).filter(link => isActive(self, link));
+	const outlinks = getOutlinks(self, file).filter(link => isActive(self, link));
 	return !inlinks.length && !outlinks.length;
 }
 
@@ -112,6 +111,13 @@ const getOutlinks = (self: AdvancedArchiver, file: TFile): string[] => {
 	return resolvedLinks[file.path] ? Object.keys(resolvedLinks[file.path]) : [];
 }
 
-const isArchived = (self: AdvancedArchiver, path: string) => {
-	return path.startsWith(self.settings.folder);
+const isActive = (self: AdvancedArchiver, path: string) => {
+	const includedPaths = getPathsFromFolderList(self, self.settings.includedFolders);
+	return !!includedPaths.find(includedPath => path.startsWith(includedPath));
+}
+
+export const getPathsFromFolderList = (self: AdvancedArchiver, folderList: string) => {
+	const paths = folderList.split(',').map(x => x.trim());
+	paths.forEach(path => { if (!self.app.vault.getFolderByPath(path)) throw new Error(`invalid folder: ${path}`)});
+	return paths;
 }

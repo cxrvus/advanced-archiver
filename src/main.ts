@@ -3,11 +3,13 @@ import * as archiver from './archiver'
 
 
 interface ArchiverSettings {
-	folder: string;
+	targetFolder: string;
+	includedFolders: string;
 }
 
 const DEFAULT_SETTINGS: ArchiverSettings = {
-	folder: 'Archive'
+	targetFolder: 'Archive',
+	includedFolders: '',
 }
 
 export default class AdvancedArchiver extends Plugin {
@@ -84,19 +86,44 @@ class ArchiverSettingsTab extends PluginSettingTab {
 
 		containerEl.empty();
 
+		// fixme: move all validation to saveSettings()
 		new Setting(containerEl)
 			.setName('Archive Folder')
 			.setDesc('target folder for you archived notes')
 			.addText(text => text
 				.setPlaceholder('Folder')
-				.setValue(this.plugin.settings.folder)
+				.setValue(this.plugin.settings.targetFolder)
 				.onChange(async (value) => {
 					if (!value) new Notice("please specify a folder!");
 					else if (!this.app.vault.getFolderByPath(value)) new Notice("please specify a valid folder!");
 					else {
-						this.plugin.settings.folder = value;
+						this.plugin.settings.targetFolder = value;
 						await this.plugin.saveSettings();
 					}
-				}));
+				})
+			)
+		;
+
+		new Setting(containerEl)
+			.setName('Search Folders')
+			.setDesc('folders that will be searched by Archiver, separated by commas')
+			.addText(text => text
+				.setPlaceholder('Folders')
+				.setValue(this.plugin.settings.includedFolders)
+				.onChange(async (value) => {
+					try {
+						archiver.getPathsFromFolderList(this.plugin, value);
+					}
+					catch (e) {
+						return;
+					}
+
+					new Notice('successfully changed included folders');
+
+					this.plugin.settings.includedFolders = value;
+					await this.plugin.saveSettings();
+				})
+			)
+		;
 	}
 }
