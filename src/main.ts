@@ -44,17 +44,13 @@ export default class Archiver extends Plugin {
 		this.addSettingTab(new ArchiverSettingsTab(this.app, this));
 
 		// ## UI
-		// todo: add ribbon button to create back-up a.k.a. archive-copy
+		// idea: add ribbon button to create back-up a.k.a. archive-copy
 
 		// ## Commands
 		// todo: archive from index
 
-		// ## Conditions:
-		// todo: archive untracked files
-
 		// ## Settings:
 		// fixme: move all validation to saveSettings()
-		// todo: root files (Search field)
 		// todo: option to exclude Canvas Mirrors
 		// idea: archival conditions (see above)
 	}
