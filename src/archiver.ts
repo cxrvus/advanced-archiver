@@ -87,7 +87,7 @@ const createArchiveIndex = async (self: Archiver) => {
 		untrackedFiles = includedFiles.filter(file => isOrphan(self, file));
 	}
 
-	const intro = `> [!info]\n> Found ${untrackedFiles.length} file(s)\n> Perform Auto-Archive again to archive all mentioned files in current note\n`;
+	const intro = `#archive_index\n\n> [!info]\n> Found ${untrackedFiles.length} file(s)\n> Perform an Archive action on **this** note to archive all mentioned files\n`;
 	const headers = "| File |\n| --- |";
 	const data = untrackedFiles
 		.map(file => `| [[${file.path}\\|${file.name}]] |`)
