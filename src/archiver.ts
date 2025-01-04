@@ -1,8 +1,8 @@
 import { FileView, Notice, TFile } from 'obsidian';
-import AdvancedArchiver from './main';
+import Archiver from './main';
 
 
-export const archive = async (self: AdvancedArchiver, files: TFile[], copied: boolean) => {
+export const archive = async (self: Archiver, files: TFile[], copied: boolean) => {
 	const { vault } = self.app;
 	const archiveFolderPath = await getArchivePath(self);
 	const archivedFiles = []
@@ -24,7 +24,7 @@ export const archive = async (self: AdvancedArchiver, files: TFile[], copied: bo
 	return archivedFiles;
 }
 
-const getArchivePath = async (self: AdvancedArchiver) => {
+const getArchivePath = async (self: Archiver) => {
 	const { vault } = self.app;
 	const { targetFolder: folder } = self.settings;
 
@@ -35,7 +35,7 @@ const getArchivePath = async (self: AdvancedArchiver) => {
 	return `${folder}/${date}`;
 }
 
-export const archiveCurrent = (self: AdvancedArchiver, copied: boolean, checking: boolean) => {
+export const archiveCurrent = (self: Archiver, copied: boolean, checking: boolean) => {
 	const currentFile = self.app.workspace.getActiveViewOfType(FileView)?.file;
 
 	if (currentFile) {
@@ -51,11 +51,11 @@ export const archiveCurrent = (self: AdvancedArchiver, copied: boolean, checking
 	return !!currentFile;
 }
 
-export const createArchiveIndexSync = (self: AdvancedArchiver) => {
+export const createArchiveIndexSync = (self: Archiver) => {
 	createArchiveIndex(self).catch(e => new Notice(`failed to create Archive Index: ${e}`));
 }
 
-const createArchiveIndex = async (self: AdvancedArchiver) => {
+const createArchiveIndex = async (self: Archiver) => {
 	const { vault, workspace } = self.app;
 
 	const activeFiles = vault.getFiles().filter(({path}) => isActive(self, path));
@@ -90,30 +90,30 @@ const createArchiveIndex = async (self: AdvancedArchiver) => {
 	workspace.getLeaf(true).openFile(newFile);
 }
 
-const isOrphan = (self: AdvancedArchiver, file: TFile): boolean => {
+const isOrphan = (self: Archiver, file: TFile): boolean => {
 	const inlinks = getInlinks(self, file).filter(link => isActive(self, link));
 	const outlinks = getOutlinks(self, file).filter(link => isActive(self, link));
 	return !inlinks.length && !outlinks.length;
 }
 
-const getInlinks = (self: AdvancedArchiver, file: TFile): string[] => {
+const getInlinks = (self: Archiver, file: TFile): string[] => {
 	const { resolvedLinks } = self.app.metadataCache;
 	return Object.entries(resolvedLinks)
 		.filter(([, targetFiles]) => targetFiles[file.path] > 0)
 		.map(([sourcePath]) => sourcePath);
 }
 
-const getOutlinks = (self: AdvancedArchiver, file: TFile): string[] => {
+const getOutlinks = (self: Archiver, file: TFile): string[] => {
 	const { resolvedLinks } = self.app.metadataCache;
 	return resolvedLinks[file.path] ? Object.keys(resolvedLinks[file.path]) : [];
 }
 
-const isActive = (self: AdvancedArchiver, path: string) => {
+const isActive = (self: Archiver, path: string) => {
 	const includedPaths = getPathsFromFolderList(self, self.settings.includedFolders);
 	return !!includedPaths.find(includedPath => path.startsWith(includedPath));
 }
 
-export const getPathsFromFolderList = (self: AdvancedArchiver, folderList: string) => {
+export const getPathsFromFolderList = (self: Archiver, folderList: string) => {
 	const paths = folderList.split(',').map(x => x.trim());
 	paths.forEach(path => { if (!self.app.vault.getFolderByPath(path)) throw new Error(`invalid folder: ${path}`)});
 	return paths;

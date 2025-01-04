@@ -12,7 +12,7 @@ const DEFAULT_SETTINGS: ArchiverSettings = {
 	includedFolders: '',
 }
 
-export default class AdvancedArchiver extends Plugin {
+export default class Archiver extends Plugin {
 	settings: ArchiverSettings;
 
 	async onload() {
@@ -72,9 +72,9 @@ export default class AdvancedArchiver extends Plugin {
 
 
 class ArchiverSettingsTab extends PluginSettingTab {
-	plugin: AdvancedArchiver;
+	plugin: Archiver;
 
-	constructor(app: App, plugin: AdvancedArchiver) {
+	constructor(app: App, plugin: Archiver) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
