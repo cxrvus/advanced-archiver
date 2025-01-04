@@ -58,7 +58,7 @@ export const createArchiveIndexSync = (self: Archiver) => {
 const createArchiveIndex = async (self: Archiver) => {
 	const { vault, workspace } = self.app;
 
-	const activeFiles = vault.getFiles().filter(({path}) => isActive(self, path));
+	const activeFiles = vault.getFiles().filter(({path}) => preFilter(self, path));
 
 	const archiveFiles = activeFiles.map(file =>
 		{
@@ -91,8 +91,8 @@ const createArchiveIndex = async (self: Archiver) => {
 }
 
 const isOrphan = (self: Archiver, file: TFile): boolean => {
-	const inlinks = getInlinks(self, file).filter(link => isActive(self, link));
-	const outlinks = getOutlinks(self, file).filter(link => isActive(self, link));
+	const inlinks = getInlinks(self, file).filter(link => preFilter(self, link));
+	const outlinks = getOutlinks(self, file).filter(link => preFilter(self, link));
 	return !inlinks.length && !outlinks.length;
 }
 
@@ -108,7 +108,7 @@ const getOutlinks = (self: Archiver, file: TFile): string[] => {
 	return resolvedLinks[file.path] ? Object.keys(resolvedLinks[file.path]) : [];
 }
 
-const isActive = (self: Archiver, path: string) => {
+const preFilter = (self: Archiver, path: string) => {
 	const includedPaths = getPathsFromFolderList(self, self.settings.includedFolders);
 	return !!includedPaths.find(includedPath => path.startsWith(includedPath));
 }
