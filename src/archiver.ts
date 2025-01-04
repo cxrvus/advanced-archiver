@@ -9,7 +9,7 @@ export const archive = async (self: AdvancedArchiver, files: TFile[], copied: bo
 
 	for(const file of files) {
 		try {
-			const archiveFilePath = `${archiveFolderPath}/${file.name}`;
+			const archiveFilePath = `${archiveFolderPath} - ${file.name}`;
 			const archivedFile = await vault.copy(file, archiveFilePath);
 			if (!copied) await vault.delete(file);
 
@@ -31,11 +31,8 @@ const getArchivePath = async (self: AdvancedArchiver) => {
 	if (!vault.getFolderByPath(folder)) await vault.createFolder(folder);
 
 	const date = new Date().toISOString().split('T')[0];
-	const datedPath = `${folder}/${date}`;
 
-	if (!vault.getFolderByPath(datedPath)) await vault.createFolder(datedPath);
-
-	return datedPath;
+	return `${folder}/${date}`;
 }
 
 export const archiveCurrent = (self: AdvancedArchiver, copied: boolean, checking: boolean) => {
@@ -84,7 +81,7 @@ const createArchiveIndex = async (self: AdvancedArchiver) => {
 	const content = [intro, headers, data, ''].join('\n')
 
 	const folderPath = await getArchivePath(self);
-	const filePath = `${folderPath}/Archive Index.md`; 
+	const filePath = `${folderPath} - Archive Index.md`; 
 
 	const oldFile = vault.getFileByPath(filePath);
 	if (oldFile) await vault.delete(oldFile);
