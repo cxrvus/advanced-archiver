@@ -6,12 +6,14 @@ interface ArchiverSettings {
 	targetFolder: string;
 	includedFolders: string;
 	rootFile: string;
+	excludeMirrors: boolean;
 }
 
 const DEFAULT_SETTINGS: ArchiverSettings = {
 	targetFolder: 'Archive',
 	includedFolders: '',
 	rootFile: '',
+	excludeMirrors: false,
 }
 
 export default class Archiver extends Plugin {
@@ -130,6 +132,18 @@ class ArchiverSettingsTab extends PluginSettingTab {
 					new Notice('successfully changed root file');
 
 					this.plugin.settings.rootFile = value;
+					await this.plugin.saveSettings();
+				})
+			)
+		;
+
+		new Setting(containerEl)
+			.setName('Exclude Canvas Mirrors')
+			.setDesc('exclude Canvas Mirror files from being archived')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.excludeMirrors)
+				.onChange(async (value) => {
+					this.plugin.settings.excludeMirrors = value;
 					await this.plugin.saveSettings();
 				})
 			)
