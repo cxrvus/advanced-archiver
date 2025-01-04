@@ -90,8 +90,8 @@ const createArchiveIndex = async (self: Archiver) => {
 }
 
 const isOrphan = (self: Archiver, file: TFile): boolean => {
-	const inlinks = getInlinks(self, file).filter(link => preFilter(self, link));
-	const outlinks = getOutlinks(self, file).filter(link => preFilter(self, link));
+	const inlinks = getInlinks(self, file);
+	const outlinks = getOutlinks(self, file);
 	return !inlinks.length && !outlinks.length;
 }
 
@@ -99,12 +99,14 @@ const getInlinks = (self: Archiver, file: TFile): string[] => {
 	const { resolvedLinks } = self.app.metadataCache;
 	return Object.entries(resolvedLinks)
 		.filter(([, targetFiles]) => targetFiles[file.path] > 0)
-		.map(([sourcePath]) => sourcePath);
+		.map(([sourcePath]) => sourcePath)
+		.filter(path => preFilter(self, path));
 }
 
 const getOutlinks = (self: Archiver, file: TFile): string[] => {
 	const { resolvedLinks } = self.app.metadataCache;
-	return resolvedLinks[file.path] ? Object.keys(resolvedLinks[file.path]) : [];
+	const outLinks = resolvedLinks[file.path] ? Object.keys(resolvedLinks[file.path]) : [];
+	return outLinks.filter(path => preFilter(self, path));
 }
 
 const preFilter = (self: Archiver, path: string) => {
