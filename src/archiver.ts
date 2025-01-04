@@ -71,7 +71,7 @@ const createArchiveIndex = async (self: AdvancedArchiver) => {
 	;
 
 	// todo: display as callout
-	const intro = `*Found ${archiveFiles.length} file(s)*\n*Press the Auto-Archive button again to archive all mentioned files in current note*\n`;
+	const intro = `> [!info]\n> Found ${archiveFiles.length} file(s)\n> Perform Auto-Archive button again to archive all mentioned files in current note\n`;
 	const headers = "| File | Reason |\n| --- | --- |";
 	const data = archiveFiles
 		.map(({file, reason}) => `| [[${file.path}\\|${file.name}]] | ${reason} |`)

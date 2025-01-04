@@ -42,7 +42,7 @@ export default class AdvancedArchiver extends Plugin {
 		this.addSettingTab(new ArchiverSettingsTab(this.app, this));
 
 		// ## UI
-		// todo: add ribbon button
+		// todo: add ribbon button to create back-up a.k.a. archive-copy
 
 		// ## Commands
 		// todo: archive from index
