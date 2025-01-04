@@ -1,6 +1,7 @@
 import { FileView, Notice, TFile } from 'obsidian';
 import Archiver from './main';
 
+const INDEX_TAG = '#archive_index';
 
 export const archive = async (self: Archiver, files: TFile[], copied: boolean) => {
 	const { vault } = self.app;
@@ -35,27 +36,25 @@ const getArchivePath = async (self: Archiver) => {
 	return `${folder}/${date}`;
 }
 
-export const archiveCurrent = (self: Archiver, copied: boolean, checking: boolean) => {
+export const archiveCurrent = async (self: Archiver, copied: boolean) => {
 	const currentFile = self.app.workspace.getActiveViewOfType(FileView)?.file;
 
 	if (currentFile) {
-		if (!checking) {
-			if (currentFile) {
-				archive(self, [currentFile], copied)
-				.catch((error) => {
-					new Notice(error.message);
-				});
-			}
-		}
+		const content = await self.app.vault.cachedRead(currentFile);
+
+		if (content.includes(INDEX_TAG)) await archiveFromIndex(self, copied);
+		else await archive(self, [currentFile], copied)
 	}
-	return !!currentFile;
+	else {
+		new Notice('no file to archive selected');
+	}
 }
 
-export const createArchiveIndexSync = (self: Archiver) => {
-	createArchiveIndex(self).catch(e => new Notice(`failed to create Archive Index: ${e}`));
+const archiveFromIndex = async (self: Archiver, copied: boolean) => {
+
 }
 
-const createArchiveIndex = async (self: Archiver) => {
+export const createArchiveIndex = async (self: Archiver) => {
 	const { vault, workspace } = self.app;
 
 	const includedFiles = vault.getFiles()
@@ -87,7 +86,7 @@ const createArchiveIndex = async (self: Archiver) => {
 		untrackedFiles = includedFiles.filter(file => isOrphan(self, file));
 	}
 
-	const intro = `#archive_index\n\n> [!info]\n> Found ${untrackedFiles.length} file(s)\n> Perform an Archive action on **this** note to archive all mentioned files\n`;
+	const intro = `${INDEX_TAG}\n\n> [!info]\n> Found ${untrackedFiles.length} file(s)\n> Perform an Archive action on **this** note to archive all mentioned files\n`;
 	const headers = "| File |\n| --- |";
 	const data = untrackedFiles
 		.map(file => `| [[${file.path}\\|${file.name}]] |`)

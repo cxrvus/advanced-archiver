@@ -20,25 +20,22 @@ export default class Archiver extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
 			id: 'archive-index',
 			name: 'Create Archive Index',
-			callback: () => {
-				archiver.createArchiveIndexSync(this);
-			}
+			callback: async () => await archiver.createArchiveIndex(this)
 		});
 
 		this.addCommand({
 			id: 'archive-current',
 			name: 'Archive Current File',
-			checkCallback: (checking) => archiver.archiveCurrent(this, false, checking)
+			callback: async () => await archiver.archiveCurrent(this, false)
 		});
 
 		this.addCommand({
 			id: 'archive-current-copied',
 			name: 'Archive Copy of Current File',
-			checkCallback: (checking) => archiver.archiveCurrent(this, true, checking)
+			callback: async () => await archiver.archiveCurrent(this, true)
 		});
 
 		this.addSettingTab(new ArchiverSettingsTab(this.app, this));
@@ -47,7 +44,7 @@ export default class Archiver extends Plugin {
 		// idea: add ribbon button to create back-up a.k.a. archive-copy
 
 		// ## Commands
-		// todo: archive from index
+		// [-]
 
 		// ## Settings:
 		// fixme: move all validation to saveSettings()
