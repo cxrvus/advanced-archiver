@@ -58,22 +58,39 @@ export const createArchiveIndexSync = (self: Archiver) => {
 const createArchiveIndex = async (self: Archiver) => {
 	const { vault, workspace } = self.app;
 
-	const activeFiles = vault.getFiles().filter(({path}) => preFilter(self, path));
-
-	const archiveFiles = activeFiles.map(file =>
-		{
-			let reason;
-			if (isOrphan(self, file)) reason = 'Orphan';
-			else reason = null;
-			return { file, reason };
-		})
-		.filter(({reason}) => reason)
+	const includedFiles = vault.getFiles()
+		.filter(({path}) => preFilter(self, path))
 	;
 
-	const intro = `> [!info]\n> Found ${archiveFiles.length} file(s)\n> Perform Auto-Archive button again to archive all mentioned files in current note\n`;
-	const headers = "| File | Reason |\n| --- | --- |";
-	const data = archiveFiles
-		.map(({file, reason}) => `| [[${file.path}\\|${file.name}]] | ${reason} |`)
+	const rootFile = self.app.vault.getFileByPath(self.settings.rootFile);
+	let untrackedFiles: TFile[];
+
+	if (rootFile) {
+		const trackedFiles: TFile[] = [];
+		const searchFiles = [rootFile];
+
+		while (searchFiles.length > 0) {
+			const searchFile = searchFiles.pop();
+			if (searchFile && !trackedFiles.includes(searchFile)) {
+				trackedFiles.push(searchFile);
+				const outlinks = getOutlinks(self, searchFile)
+					.map(path => vault.getFileByPath(path))
+					.filter(file => file != null);
+				searchFiles.push(...outlinks);
+			}
+		}
+
+		untrackedFiles = includedFiles.filter(x => !trackedFiles.find(y => y.path == x.path));
+	}
+	else {
+		new Notice('please set Root File in settings to get advanced tracking');
+		untrackedFiles = includedFiles.filter(file => isOrphan(self, file));
+	}
+
+	const intro = `> [!info]\n> Found ${untrackedFiles.length} file(s)\n> Perform Auto-Archive again to archive all mentioned files in current note\n`;
+	const headers = "| File |\n| --- |";
+	const data = untrackedFiles
+		.map(file => `| [[${file.path}\\|${file.name}]] |`)
 		.join('\n')
 	;
 
