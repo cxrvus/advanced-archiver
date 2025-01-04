@@ -50,7 +50,6 @@ export default class Archiver extends Plugin {
 
 		// ## Settings:
 		// fixme: move all validation to saveSettings()
-		// todo: option to exclude Canvas Mirrors
 		// idea: archival conditions (see above)
 	}
 

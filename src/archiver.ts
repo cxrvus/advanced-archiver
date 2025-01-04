@@ -2,6 +2,7 @@ import { FileView, Notice, TFile } from 'obsidian';
 import Archiver from './main';
 
 const INDEX_TAG = '#archive_index';
+const MIRROR_TAG = '#mirror';
 
 export const archive = async (self: Archiver, files: TFile[], copied: boolean) => {
 	const { vault } = self.app;
@@ -84,12 +85,14 @@ export const createArchiveIndex = async (self: Archiver) => {
 			}
 		}
 
-		untrackedFiles = includedFiles.filter(x => !trackedFiles.find(y => y.path == x.path));
+		untrackedFiles = includedFiles.filter(x => !trackedFiles.some(y => y.path == x.path));
 	}
 	else {
 		new Notice('please set Root File in settings to get advanced tracking');
 		untrackedFiles = includedFiles.filter(file => isOrphan(self, file));
 	}
+
+	untrackedFiles = untrackedFiles.filter(file => postFilter(self, file.path))
 
 	const intro = `${INDEX_TAG}\n\n> [!info]\n> Found ${untrackedFiles.length} file(s)\n> Perform an Archive action on **this** note to archive all mentioned files\n`;
 	const headers = "| File |\n| --- |";
@@ -130,7 +133,7 @@ const getOutlinks = (self: Archiver, file: TFile): string[] => {
 	return outLinks.filter(path => preFilter(self, path));
 }
 
-const preFilter = (self: Archiver, path: string) => {
+const preFilter = (self: Archiver, path: string): boolean => {
 	const includedPaths = getPathsFromFolderList(self, self.settings.includedFolders);
 	return !!includedPaths.find(includedPath => path.startsWith(includedPath));
 }
@@ -139,4 +142,13 @@ export const getPathsFromFolderList = (self: Archiver, folderList: string) => {
 	const paths = folderList.split(',').map(x => x.trim());
 	paths.forEach(path => { if (!self.app.vault.getFolderByPath(path)) throw new Error(`invalid folder: ${path}`)});
 	return paths;
+}
+
+const postFilter = (self: Archiver, path: string): boolean => {
+	if (self.settings.excludeMirrors) {
+		const cache = self.app.metadataCache.getCache(path)?.tags;
+		if (!cache) return true;
+		else return !cache.map(tag => tag.tag).includes(MIRROR_TAG);
+	}
+	else return true;
 }
