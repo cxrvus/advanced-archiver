@@ -17,9 +17,9 @@ export const archive = async (self: Archiver, files: TFile[], copied: boolean) =
 			archivedFiles.push(archivedFile);
 		} catch (e) {
 			throw new Error(`Failed to archive file: ${e.message}`);
-		} finally {
-			new Notice(`archived ${archivedFiles.length} file(s)`);
-		}
+		} 
+
+		new Notice(`archived ${archivedFiles.length} file(s)`);
 	}
 
 	return archivedFiles;
@@ -42,7 +42,7 @@ export const archiveCurrent = async (self: Archiver, copied: boolean) => {
 	if (currentFile) {
 		const content = await self.app.vault.cachedRead(currentFile);
 
-		if (content.includes(INDEX_TAG)) await archiveFromIndex(self, copied);
+		if (content.includes(INDEX_TAG)) await archiveFromIndex(self, copied, currentFile);
 		else await archive(self, [currentFile], copied)
 	}
 	else {
@@ -50,8 +50,13 @@ export const archiveCurrent = async (self: Archiver, copied: boolean) => {
 	}
 }
 
-const archiveFromIndex = async (self: Archiver, copied: boolean) => {
+const archiveFromIndex = async (self: Archiver, copied: boolean, indexFile: TFile) => {
+	const files = getOutlinks(self, indexFile)
+		.map(path => self.app.vault.getFileByPath(path))
+		.filter(file => file != null)
+	;
 
+	await archive(self, files, copied);
 }
 
 export const createArchiveIndex = async (self: Archiver) => {
