@@ -11,11 +11,28 @@ export const archive = async (self: Archiver, files: TFile[], copied: boolean) =
 
 	for(const file of files) {
 		try {
-			const archiveFilePath = `${archiveFolderPath} - ${file.name}`;
-			const archivedFile = await vault.copy(file, archiveFilePath);
+			// idea: put all this base case stuff into the loop to reduce code duplication
+
+			let archiveFilePath = `${archiveFolderPath} - ${file.name}`;
+			let alreadyArchivedFile = vault.getFileByPath(archiveFilePath);
+
+			if (alreadyArchivedFile) {
+				// max back up count of 10 per day
+				for (let i = 1; i <= 9; i++) {
+					archiveFilePath = `${archiveFolderPath} - ${file.basename} (${i}).${file.extension}`;
+					alreadyArchivedFile = vault.getFileByPath(archiveFilePath)
+
+					if (!alreadyArchivedFile) break;
+				}
+
+				// if the file with index 9 exists delete it and replace it with the new one
+				if (alreadyArchivedFile) await vault.delete(alreadyArchivedFile);
+			}
+
+			const toBeArchivedFile = await vault.copy(file, archiveFilePath);
 			if (!copied) await vault.delete(file);
 
-			archivedFiles.push(archivedFile);
+			archivedFiles.push(toBeArchivedFile);
 		} catch (e) {
 			throw new Error(`Failed to archive file: ${e.message}`);
 		} 
