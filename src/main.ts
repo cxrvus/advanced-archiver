@@ -25,19 +25,19 @@ export default class Archiver extends Plugin {
 		this.addCommand({
 			id: 'archive-index',
 			name: 'Create Archive Index',
-			callback: async () => await archiver.createArchiveIndex(this)
+			callback: () => archiver.createArchiveIndex(this).catch(e => new Notice(e))
 		});
 
 		this.addCommand({
 			id: 'archive-current',
 			name: 'Archive Current File',
-			callback: async () => await archiver.archiveCurrent(this, false)
+			callback: () => archiver.archiveCurrent(this, false).catch(e => new Notice(e))
 		});
 
 		this.addCommand({
 			id: 'archive-current-copied',
 			name: 'Archive Copy of Current File',
-			callback: async () => await archiver.archiveCurrent(this, true)
+			callback: () => archiver.archiveCurrent(this, true).catch(e => new Notice(e))
 		});
 
 		this.addSettingTab(new ArchiverSettingsTab(this.app, this));
