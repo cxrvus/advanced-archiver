@@ -19,9 +19,9 @@ export const archive = async (self: Archiver, files: TFile[], copied: boolean) =
 		} catch (e) {
 			throw new Error(`Failed to archive file: ${e.message}`);
 		} 
-
-		new Notice(`archived ${archivedFiles.length} file(s)`);
 	}
+
+	new Notice(`archived ${archivedFiles.length} file(s)`);
 
 	return archivedFiles;
 }
