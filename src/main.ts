@@ -132,9 +132,15 @@ class ArchiverSettingsTab extends PluginSettingTab {
 			)
 		;
 
+		const CanvasMirrorDescription = document.createDocumentFragment();
+		const CanvasMirror = document.createElement('a');
+		CanvasMirror.href = 'https://github.com/cxrvus/canvas-mirror';
+		CanvasMirror.textContent = 'Canvas Mirror';
+		CanvasMirrorDescription.append('exclude ', CanvasMirror, ' files from being archived');
+
 		new Setting(containerEl)
 			.setName('Exclude Canvas Mirrors')
-			.setDesc('exclude Canvas Mirror files from being archived')
+			.setDesc(CanvasMirrorDescription)
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.excludeMirrors)
 				.onChange(async (value) => {
