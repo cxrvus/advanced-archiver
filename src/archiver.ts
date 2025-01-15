@@ -11,8 +11,6 @@ export const archive = async (self: Archiver, files: TFile[], copied: boolean) =
 
 	for(const file of files) {
 		try {
-			// idea: put all this base case stuff into the loop to reduce code duplication
-
 			let archiveFilePath = `${archiveFolderPath} - ${file.name}`;
 			let alreadyArchivedFile = vault.getFileByPath(archiveFilePath);
 

@@ -1,4 +1,4 @@
-import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Command, Notice, Plugin, PluginSettingTab, Setting, SuggestModal } from 'obsidian';
 import * as archiver from './archiver'
 
 
@@ -16,16 +16,52 @@ const DEFAULT_SETTINGS: ArchiverSettings = {
 	excludeMirrors: false,
 }
 
+class CommandsModal extends SuggestModal<string> {
+	app: App;
+	commands: Command[];
+
+	constructor(app: App, commands: Command[]) {
+		super(app);
+		this.app = app;
+		this.commands = commands;
+	}
+
+	// hide search bar
+	onOpen() {
+		super.onOpen();
+		this.inputEl.style.display = "none";
+	}
+
+	getSuggestions(): string[] {
+		return this.commands.map(({ name }) => name);
+	}
+
+	renderSuggestion(value: string, el: HTMLElement): void {
+		el.createEl("div", { text: value });
+	}
+
+	onChooseSuggestion(item: string, _: MouseEvent | KeyboardEvent): void {
+		this.commands.find(({ name }) => name == item)?.callback?.();
+	}
+}
+
 export default class Archiver extends Plugin {
 	settings: ArchiverSettings;
+
+	commands: Command[] = [];
+
+	addCommand(command: Command): Command {
+		this.commands.push(command);
+		return super.addCommand(command);
+	}
 
 	async onload() {
 		await this.loadSettings();
 
 		this.addCommand({
-			id: 'archive-index',
-			name: 'Create Archive Index',
-			callback: () => archiver.createArchiveIndex(this).catch(e => new Notice(e))
+			id: 'archive-current-copied',
+			name: 'Archive Copy of Current File',
+			callback: () => archiver.archiveCurrent(this, true).catch(e => new Notice(e))
 		});
 
 		this.addCommand({
@@ -35,15 +71,18 @@ export default class Archiver extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'archive-current-copied',
-			name: 'Archive Copy of Current File',
-			callback: () => archiver.archiveCurrent(this, true).catch(e => new Notice(e))
+			id: 'archive-index',
+			name: 'Create Archive Index',
+			callback: () => archiver.createArchiveIndex(this).catch(e => new Notice(e))
 		});
 
-		this.addSettingTab(new ArchiverSettingsTab(this.app, this));
+		const ribbonButton = this.addRibbonIcon("archive", "Advanced Archiver", (_: MouseEvent) => {
+			new CommandsModal(this.app, this.commands).open();
+		});
 
-		// ## UI
-		// idea: add ribbon button to show command menu
+		ribbonButton.setAttribute("aria-label", "Advanced Archiver");
+
+		this.addSettingTab(new ArchiverSettingsTab(this.app, this));
 
 		// ## Settings:
 		// fixme: move all validation to saveSettings()
