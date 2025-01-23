@@ -69,7 +69,7 @@ export const archiveCurrent = async (self: Archiver, copied: boolean) => {
 const archiveFromIndex = async (self: Archiver, copied: boolean, indexFile: TFile) => {
 	const files = getOutlinks(self, indexFile)
 		.map(path => self.app.vault.getFileByPath(path))
-		.filter(file => file != null)
+		.filter((file): file is TFile => file != null)
 	;
 
 	await archive(self, files, copied);
@@ -97,7 +97,7 @@ export const createArchiveIndex = async (self: Archiver) => {
 				trackedFiles.push(searchFile);
 				const outlinks = getOutlinks(self, searchFile)
 					.map(path => vault.getFileByPath(path))
-					.filter(file => file != null);
+					.filter((file): file is TFile => file != null);
 				searchFiles.push(...outlinks);
 			}
 		}
