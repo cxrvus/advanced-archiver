@@ -47,6 +47,7 @@ const getArchivePath = async (self: Archiver) => {
 
 	if (!vault.getFolderByPath(folder)) await vault.createFolder(folder);
 
+	// todo: toggle date prefix in settings
 	const date = new Date().toISOString().split('T')[0].substring(2);
 
 	return `${folder}/${date}`;
