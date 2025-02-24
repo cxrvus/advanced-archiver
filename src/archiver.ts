@@ -11,10 +11,15 @@ export const archive = async (self: Archiver, files: TFile[], copied: boolean) =
 
 	for(const file of files) {
 		try {
-			let archiveFilePath = `${archiveFolderPath} - ${file.name}`;
+			const isMutable = file.extension == 'md' || file.extension == 'canvas';
+
+			// todo: toggle date prefix in settings / depending on command
+			const date = isMutable ? new Date().toISOString().split('T')[0].substring(2) + ' - ' : '';
+
+			let archiveFilePath = `${archiveFolderPath}/${date}${file.name}`;
 			let alreadyArchivedFile = vault.getFileByPath(archiveFilePath);
 
-			if (alreadyArchivedFile) {
+			if (isMutable && alreadyArchivedFile) {
 				// max back up count of 10 per day
 				for (let i = 1; i <= 9; i++) {
 					archiveFilePath = `${archiveFolderPath} - ${file.basename} (${i}).${file.extension}`;
@@ -46,11 +51,7 @@ const getArchivePath = async (self: Archiver) => {
 	const { targetFolder: folder } = self.settings;
 
 	if (!vault.getFolderByPath(folder)) await vault.createFolder(folder);
-
-	// todo: toggle date prefix in settings
-	const date = new Date().toISOString().split('T')[0].substring(2);
-
-	return `${folder}/${date}`;
+	return folder;
 }
 
 export const archiveCurrent = async (self: Archiver, copied: boolean) => {
