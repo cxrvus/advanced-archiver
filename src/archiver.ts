@@ -4,6 +4,9 @@ import Archiver from './main';
 const INDEX_TAG = '#archive_index';
 const MIRROR_TAG = '#mirror';
 
+// TODO: refactor - create util module
+
+
 export const archive = async (self: Archiver, files: TFile[], copied: boolean) => {
 	const { vault } = self.app;
 	const archiveFolderPath = await getArchivePath(self);
@@ -14,7 +17,7 @@ export const archive = async (self: Archiver, files: TFile[], copied: boolean) =
 			const isMutable = file.extension == 'md' || file.extension == 'canvas';
 
 			// todo: toggle date prefix in settings / depending on command
-			const date = isMutable ? new Date().toISOString().split('T')[0].substring(2) + ' - ' : '';
+			const date = isMutable ? datePrefix() : '';
 
 			let archiveFilePath = `${archiveFolderPath}/${date}${file.name}`;
 			let alreadyArchivedFile = vault.getFileByPath(archiveFilePath);
@@ -53,6 +56,8 @@ const getArchivePath = async (self: Archiver) => {
 	if (!vault.getFolderByPath(folder)) await vault.createFolder(folder);
 	return folder;
 }
+
+const datePrefix = () => `${new Date().toISOString().split('T')[0].substring(2)}  - `;
 
 export const archiveCurrent = async (self: Archiver, copied: boolean) => {
 	const currentFile = self.app.workspace.getActiveViewOfType(FileView)?.file;
@@ -123,7 +128,7 @@ export const createArchiveIndex = async (self: Archiver) => {
 	const content = [intro, headers, data, ''].join('\n')
 
 	const folderPath = await getArchivePath(self);
-	const filePath = `${folderPath} - Archive Index.md`; 
+	const filePath = `${folderPath}/${datePrefix()}Archive Index.md`; 
 
 	const oldFile = vault.getFileByPath(filePath);
 	if (oldFile) await vault.delete(oldFile);
