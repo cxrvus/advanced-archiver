@@ -17,15 +17,18 @@ export const archive = async (self: Archiver, files: TFile[], copied: boolean) =
 			const isMutable = file.extension == 'md' || file.extension == 'canvas';
 
 			// todo: toggle date prefix in settings / depending on command
-			const date = isMutable ? datePrefix() : '';
+			const date = isMutable ? getDatePrefix() : '';
 
-			let archiveFilePath = `${archiveFolderPath}/${date}${file.name}`;
+			let archiveFilePath = getFilePath(archiveFolderPath, date, file.name);
 			let alreadyArchivedFile = vault.getFileByPath(archiveFilePath);
 
 			if (isMutable && alreadyArchivedFile) {
+
+				const archiveFilePathBase = getFilePath(archiveFolderPath, date, file.basename);
+
 				// max back up count of 10 per day
 				for (let i = 1; i <= 9; i++) {
-					archiveFilePath = `${archiveFolderPath} - ${file.basename} (${i}).${file.extension}`;
+					archiveFilePath = `${archiveFilePathBase} (${i}).${file.extension}`;
 					alreadyArchivedFile = vault.getFileByPath(archiveFilePath)
 
 					if (!alreadyArchivedFile) break;
@@ -57,7 +60,8 @@ const getArchivePath = async (self: Archiver) => {
 	return folder;
 }
 
-const datePrefix = () => `${new Date().toISOString().split('T')[0].substring(2)}  - `;
+const getDatePrefix = () => `${new Date().toISOString().split('T')[0].substring(2)} - `;
+const getFilePath = (folder: string, date: string, name: string) => `${folder}/${date}${name}`;
 
 export const archiveCurrent = async (self: Archiver, copied: boolean) => {
 	const currentFile = self.app.workspace.getActiveViewOfType(FileView)?.file;
@@ -128,7 +132,7 @@ export const createArchiveIndex = async (self: Archiver) => {
 	const content = [intro, headers, data, ''].join('\n')
 
 	const folderPath = await getArchivePath(self);
-	const filePath = `${folderPath}/${datePrefix()}Archive Index.md`; 
+	const filePath = `${folderPath}/${getDatePrefix()}Archive Index.md`; 
 
 	const oldFile = vault.getFileByPath(filePath);
 	if (oldFile) await vault.delete(oldFile);
