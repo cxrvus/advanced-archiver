@@ -58,6 +58,7 @@ export default class Archiver extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
+		// todo: rename to 'create back-up'
 		this.addCommand({
 			id: 'archive-current-copied',
 			name: 'Archive Copy of Current File',
@@ -75,6 +76,8 @@ export default class Archiver extends Plugin {
 			name: 'Create Archive Index',
 			callback: () => archiver.createArchiveIndex(this).catch(e => new Notice(e))
 		});
+
+		// todo: add command to show old versions
 
 		const ribbonButton = this.addRibbonIcon("archive", "Advanced Archiver", (_: MouseEvent) => {
 			new CommandsModal(this.app, this.commands).open();

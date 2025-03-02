@@ -1,9 +1,11 @@
 import { FileView, Notice, TFile } from 'obsidian';
 import Archiver from './main';
 
+// todo: change these tags to reflect different types of archive indexes
 const INDEX_TAG = '#archive_index';
 const MIRROR_TAG = '#mirror';
 
+// TODO: create new branches
 // TODO: refactor - create util module
 
 
@@ -22,6 +24,7 @@ export const archive = async (self: Archiver, files: TFile[], copied: boolean) =
 			let archiveFilePath = getFilePath(archiveFolderPath, date, file.name);
 			let alreadyArchivedFile = vault.getFileByPath(archiveFilePath);
 
+			// TODO: add setting to enable zero-appending, also appending to non-duplicate files
 			if (isMutable && alreadyArchivedFile) {
 
 				const archiveFilePathBase = getFilePath(archiveFolderPath, date, file.basename);
@@ -35,6 +38,7 @@ export const archive = async (self: Archiver, files: TFile[], copied: boolean) =
 				}
 
 				// if the file with index 9 exists delete it and replace it with the new one
+				// todo: add setting to disable this
 				if (alreadyArchivedFile) await vault.delete(alreadyArchivedFile);
 			}
 
@@ -86,6 +90,8 @@ const archiveFromIndex = async (self: Archiver, copied: boolean, indexFile: TFil
 	await archive(self, files, copied);
 }
 
+// todo: standardize archive indexes, e.g. for orphans AND old versions
+// idea: could use custom template
 export const createArchiveIndex = async (self: Archiver) => {
 	const { vault, workspace } = self.app;
 
@@ -132,6 +138,9 @@ export const createArchiveIndex = async (self: Archiver) => {
 	const content = [intro, headers, data, ''].join('\n')
 
 	const folderPath = await getArchivePath(self);
+	
+	// TODO: make the Archive Index path customizable and static
+	// todo: add Archive Index path setting
 	const filePath = `${folderPath}/${getDatePrefix()}Archive Index.md`; 
 
 	const oldFile = vault.getFileByPath(filePath);
