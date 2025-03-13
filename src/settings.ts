@@ -5,6 +5,20 @@ import { getPathsFromFolderList } from './util';
 // todo: create dedicated validation function & call it on saveSettings
 // todo: add Archive View path setting
 
+export interface ArchiverSettings {
+	targetFolder: string;
+	includedFolders: string;
+	rootFile: string;
+	excludeMirrors: boolean;
+}
+
+export const DEFAULT_SETTINGS: ArchiverSettings = {
+	targetFolder: 'Archive',
+	includedFolders: '',
+	rootFile: '',
+	excludeMirrors: false,
+}
+
 export class ArchiverSettingsTab extends PluginSettingTab {
 	plugin: Archiver;
 
