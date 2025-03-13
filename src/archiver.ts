@@ -126,15 +126,6 @@ export const createArchiveIndex = async (self: Archiver) => {
 
 	untrackedFiles = untrackedFiles.filter(file => postFilter(self, file.path))
 
-	const intro = `${INDEX_TAG}\n\n> [!info]\n> Found ${untrackedFiles.length} file(s)\n> Perform an Archive action on **this** note to archive all mentioned files\n`;
-	const headers = "| File |\n| --- |";
-	const data = untrackedFiles
-		.map(file => `| [[${file.path}\\|${file.name}]] |`)
-		.join('\n')
-	;
-
-	const content = [intro, headers, data, ''].join('\n')
-
 	const folderPath = await getArchivePath(self);
 	
 	// TODO: make the Archive Index path customizable and static
@@ -143,6 +134,19 @@ export const createArchiveIndex = async (self: Archiver) => {
 	const oldFile = vault.getFileByPath(filePath);
 	if (oldFile) await vault.delete(oldFile);
 
+	const content = fmtArchiverIndex(untrackedFiles);
 	const newFile = await vault.create(filePath, content);
 	workspace.getLeaf(true).openFile(newFile);
+}
+
+const fmtArchiverIndex = (untrackedFiles: TFile[]): string => {
+	const intro = `${INDEX_TAG}\n\n> [!info]\n> Found ${untrackedFiles.length} file(s)\n> Perform an Archive action on **this** note to archive all mentioned files\n`;
+	const headers = "| File |\n| --- |";
+	const data = untrackedFiles
+		.map(file => `| [[${file.path}\\|${file.name}]] |`)
+		.join('\n')
+	;
+	const content = [intro, headers, data, ''].join('\n')
+
+	return content;
 }
