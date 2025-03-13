@@ -1,7 +1,9 @@
 import { App, Command, Notice, Plugin, PluginSettingTab, Setting, SuggestModal } from 'obsidian';
 import * as archiver from './archiver'
+import { getPathsFromFolderList } from './util';
 
 
+// todo: add Archive Index path setting
 interface ArchiverSettings {
 	targetFolder: string;
 	includedFolders: string;
@@ -143,7 +145,7 @@ class ArchiverSettingsTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.includedFolders)
 				.onChange(async (value) => {
 					try {
-						archiver.getPathsFromFolderList(this.plugin, value);
+						getPathsFromFolderList(this.plugin, value);
 					}
 					catch (e) {
 						return;
