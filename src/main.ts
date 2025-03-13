@@ -1,21 +1,7 @@
 import { App, Command, Notice, Plugin, SuggestModal } from 'obsidian';
 import * as archiver from './archiver'
-import { ArchiverSettingsTab } from './settings';
+import { ArchiverSettings, ArchiverSettingsTab, DEFAULT_SETTINGS } from './settings';
 
-
-interface ArchiverSettings {
-	targetFolder: string;
-	includedFolders: string;
-	rootFile: string;
-	excludeMirrors: boolean;
-}
-
-const DEFAULT_SETTINGS: ArchiverSettings = {
-	targetFolder: 'Archive',
-	includedFolders: '',
-	rootFile: '',
-	excludeMirrors: false,
-}
 
 class CommandsModal extends SuggestModal<string> {
 	app: App;
@@ -73,9 +59,9 @@ export default class Archiver extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'archive-index',
-			name: 'Create Archive Index',
-			callback: () => archiver.createArchiveIndex(this).catch(e => new Notice(e))
+			id: 'archive-view',
+			name: 'Create Archive View',
+			callback: () => archiver.createArchiveView(this).catch(e => new Notice(e))
 		});
 
 		// todo: add command to show old versions

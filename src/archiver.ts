@@ -2,8 +2,8 @@ import { FileView, Notice, TFile } from 'obsidian';
 import Archiver from './main';
 import { getDatePrefix, getFilePath, getOutlinks, isOrphan, postFilter, preFilter } from './util';
 
-// todo: change these tags to reflect different types of archive indexes
-const INDEX_TAG = '#archive_index';
+// todo: change these tags to reflect different types of archive views
+const ARCHIVE_TAG = '#archive_view';
 
 export const archive = async (self: Archiver, files: TFile[], copied: boolean) => {
 	const { vault } = self.app;
@@ -67,7 +67,7 @@ export const archiveCurrent = async (self: Archiver, copied: boolean) => {
 	if (currentFile) {
 		const content = await self.app.vault.cachedRead(currentFile);
 
-		if (content.includes(INDEX_TAG)) await archiveFromIndex(self, copied, currentFile);
+		if (content.includes(ARCHIVE_TAG)) await archiveFromView(self, copied, currentFile);
 		else await archive(self, [currentFile], copied)
 	}
 	else {
@@ -75,8 +75,8 @@ export const archiveCurrent = async (self: Archiver, copied: boolean) => {
 	}
 }
 
-const archiveFromIndex = async (self: Archiver, copied: boolean, indexFile: TFile) => {
-	const files = getOutlinks(self, indexFile)
+const archiveFromView = async (self: Archiver, copied: boolean, viewFile: TFile) => {
+	const files = getOutlinks(self, viewFile)
 		.map(path => self.app.vault.getFileByPath(path))
 		.filter((file): file is TFile => file != null)
 	;
@@ -84,9 +84,9 @@ const archiveFromIndex = async (self: Archiver, copied: boolean, indexFile: TFil
 	await archive(self, files, copied);
 }
 
-// todo: standardize archive indexes, e.g. for orphans AND old versions
+// todo: standardize archive views, e.g. for orphans AND old versions
 // idea: could use custom template
-export const createArchiveIndex = async (self: Archiver) => {
+export const createArchiveView = async (self: Archiver) => {
 	const { vault, workspace } = self.app;
 
 	// idea: if enabled in settings, generate Canvas Mirrors
@@ -122,24 +122,28 @@ export const createArchiveIndex = async (self: Archiver) => {
 
 	untrackedFiles = untrackedFiles.filter(file => postFilter(self, file.path))
 
-	const intro = `${INDEX_TAG}\n\n> [!info]\n> Found ${untrackedFiles.length} file(s)\n> Perform an Archive action on **this** note to archive all mentioned files\n`;
-	const headers = "| File |\n| --- |";
-	const data = untrackedFiles
-		.map(file => `| [[${file.path}\\|${file.name}]] |`)
-		.join('\n')
-	;
-
-	const content = [intro, headers, data, ''].join('\n')
-
 	const folderPath = await getArchivePath(self);
 	
-	// TODO: make the Archive Index path customizable and static
-	// todo: add Archive Index path setting
-	const filePath = `${folderPath}/${getDatePrefix()}Archive Index.md`; 
+	// TODO: make the Archive View path static
+	const filePath = `${folderPath}/${getDatePrefix()}Archive View.md`; 
 
 	const oldFile = vault.getFileByPath(filePath);
 	if (oldFile) await vault.delete(oldFile);
 
+	const content = fmtArchiveView(untrackedFiles);
 	const newFile = await vault.create(filePath, content);
 	workspace.getLeaf(true).openFile(newFile);
+}
+
+const fmtArchiveView = (files: TFile[]): string => {
+	const intro = `${ARCHIVE_TAG}\n\n> [!info]\n> Found ${files.length} file(s)\n> Perform an Archive action on **this** note to archive all mentioned files\n`;
+	const headers = "| File |\n| --- |";
+	const data = files
+		.map(file => `| [[${file.path}\\|${file.name}]] |`)
+		.join('\n')
+	;
+
+	const content = [intro, headers, data, ''].join('\n');
+
+	return content;
 }
