@@ -3,6 +3,7 @@ import Archiver from './main';
 import { getPathsFromFolderList } from './util';
 
 // todo: create dedicated validation function & call it on saveSettings
+// todo: add Archive View path setting
 
 export class ArchiverSettingsTab extends PluginSettingTab {
 	plugin: Archiver;

@@ -73,9 +73,9 @@ export default class Archiver extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'archive-index',
-			name: 'Create Archive Index',
-			callback: () => archiver.createArchiveIndex(this).catch(e => new Notice(e))
+			id: 'archive-view',
+			name: 'Create Archive View',
+			callback: () => archiver.createArchiveView(this).catch(e => new Notice(e))
 		});
 
 		// todo: add command to show old versions
